@@ -18,6 +18,6 @@ public class CustomExceptionHandler {
     @ExceptionHandler({CustomRunTimeException.class})
     public ResponseEntity runTimeException(final CustomRunTimeException e){
         e.printStackTrace();
-        return ResponseEntity.status(e.getError()).body(e.getMessage());
+        return ResponseEntity.status(e.getError()).body(new BodyMessage(e.getMessage(),e.getError().value()));
     }
 }

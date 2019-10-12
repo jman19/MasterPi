@@ -1,4 +1,5 @@
 package com.masterPi.controller;
+import com.masterPi.data.impl.SelectedText;
 import com.masterPi.data.impl.Text;
 import com.masterPi.resources.BodyMessage;
 import com.masterPi.resources.SelectTextInput;
@@ -27,11 +28,25 @@ public class TextController {
     }
 
     @CrossOrigin("*")
+    @PutMapping("/edit/text/{id}")
+    @ApiOperation(value = "this endpoint is used to edit existing text", response = Text.class)
+    public ResponseEntity editText(@PathVariable Long id, @RequestBody TextInput input){
+        return ResponseEntity.ok(textServices.editText(id,input.getTitle(),input.getBody()));
+    }
+
+    @CrossOrigin("*")
     @PutMapping("/selectText")
     @ApiOperation(value = "this endpoint is used select the text for use", response = BodyMessage.class)
     public ResponseEntity selectText(@RequestBody SelectTextInput input){
         textServices.selectText(input.getTextIdToSelect());
         return ResponseEntity.status(HttpStatus.OK).body(new BodyMessage("selected text successful",HttpStatus.OK.value()));
+    }
+
+    @CrossOrigin("*")
+    @GetMapping("/selectText")
+    @ApiOperation(value = "this endpoint is used to get the selected text id", response = SelectedText.class)
+    public ResponseEntity getSelectTextId(){
+        return ResponseEntity.ok(textServices.getSelect());
     }
 
     @CrossOrigin("*")

@@ -41,11 +41,34 @@ public class TextServices {
     }
 
     /***
+     * this endPoint allows you to edit an existing text
+     * @param id
+     * @param title
+     * @param content
+     * @return edited text
+     */
+    public Text editText(Long id, String title, String content){
+        if(quickRepository.getText(id)==null){
+            throw new CustomRunTimeException("the text was not found", HttpStatus.NOT_FOUND);
+        }
+        else{
+            Text text=quickRepository.getText(id);
+            text.setTitle(title);
+            text.setText(content);
+            text.getIndex().setIndex(0);
+            return quickRepository.createText(text);
+        }
+    }
+
+    /***
      * This method saves the selected text id so if system is powered off it will still
      * remember the last selected text
      * @param id
      */
     public void selectText(Long id){
+        if(quickRepository.getText(id)==null){
+            throw new CustomRunTimeException("invalid text id, text not found in system",HttpStatus.BAD_REQUEST);
+        }
         if(quickRepository.getSelectedText()==null){
             quickRepository.createSelectedText(new SelectedText(id));
         }
@@ -62,7 +85,13 @@ public class TextServices {
      * @return Text
      */
     public Text getText(Long id){
-        return quickRepository.getText(id);
+        Text text=quickRepository.getText(id);
+        if(text==null){
+            throw new CustomRunTimeException("text was not found", HttpStatus.NOT_FOUND);
+        }
+        else{
+            return text;
+        }
     }
 
     /***
@@ -150,6 +179,20 @@ public class TextServices {
         }
         else{
             return text.getText().substring(index.getIndex(),index.getIndex()+Integer.parseInt(env.getProperty("parseSize")));
+        }
+    }
+
+    /***
+     * get the id of the currently selected text
+     * @return select id
+     */
+    public SelectedText getSelect(){
+        SelectedText sel=quickRepository.getSelectedText();
+        if (sel==null){
+            throw new CustomRunTimeException("no text was selected before hand", HttpStatus.NOT_FOUND);
+        }
+        else{
+            return quickRepository.getSelectedText();
         }
     }
 
