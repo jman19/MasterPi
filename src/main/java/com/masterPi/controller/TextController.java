@@ -1,5 +1,4 @@
 package com.masterPi.controller;
-import com.masterPi.data.impl.SelectedText;
 import com.masterPi.data.impl.Text;
 import com.masterPi.resources.BodyMessage;
 import com.masterPi.resources.SelectTextInput;
@@ -44,7 +43,7 @@ public class TextController {
 
     @CrossOrigin("*")
     @GetMapping("/selectText")
-    @ApiOperation(value = "this endpoint is used to get the selected text id", response = SelectedText.class)
+    @ApiOperation(value = "this endpoint is used to get the selected text id", response = SelectTextInput.class)
     public ResponseEntity getSelectTextId(){
         return ResponseEntity.ok(textServices.getSelect());
     }
@@ -57,10 +56,10 @@ public class TextController {
     }
 
     @CrossOrigin("*")
-    @DeleteMapping("/deleteText")
+    @DeleteMapping("/deleteText/{id}")
     @ApiOperation(value = "this endpoint is used to delete text content", response = BodyMessage.class)
-    public ResponseEntity deleteText(@RequestBody SelectTextInput input){
-        textServices.deleteText(input.getTextIdToSelect());
+    public ResponseEntity deleteText(@PathVariable Long id){
+        textServices.deleteText(id);
         return ResponseEntity.status(HttpStatus.OK).body(new BodyMessage("selected text deleted successfully",HttpStatus.OK.value()));
     }
 

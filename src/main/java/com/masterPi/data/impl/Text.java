@@ -12,6 +12,7 @@ public class Text {
 
     private String text;
     private String title;
+    private Boolean selected;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "index_id", referencedColumnName = "id")
@@ -20,9 +21,10 @@ public class Text {
     public Text() {
     }
 
-    public Text(String text, String title, Index index) {
+    public Text(String text, String title, Boolean selected, Index index) {
         this.text = text;
         this.title = title;
+        this.selected = selected;
         this.index = index;
     }
 
@@ -48,6 +50,14 @@ public class Text {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public Boolean getSelected() {
+        return selected;
+    }
+
+    public void setSelected(Boolean selected) {
+        this.selected = selected;
     }
 
     public Index getIndex() {

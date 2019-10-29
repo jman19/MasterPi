@@ -9,11 +9,9 @@ import java.util.Optional;
 @Component
 public class QuickSpringRepository implements QuickRepository {
     private TextJPA textJPA;
-    private SelectedTextJPA selectedTextJPA;
 
-    public QuickSpringRepository(TextJPA textJPA, SelectedTextJPA selectedTextJPA) {
+    public QuickSpringRepository(TextJPA textJPA) {
         this.textJPA = textJPA;
-        this.selectedTextJPA = selectedTextJPA;
     }
 
     public Text getText(Long id){
@@ -37,21 +35,5 @@ public class QuickSpringRepository implements QuickRepository {
         textJPA.deleteById(id);
     }
 
-    public SelectedText createSelectedText(SelectedText selectedText){
-        return selectedTextJPA.save(selectedText);
-    }
-
-    public void deleteSelectedText(){
-        selectedTextJPA.deleteAll();
-    }
-
-    public SelectedText getSelectedText(){
-        List<SelectedText> selectedTextList=selectedTextJPA.findAll();
-        if (selectedTextList.isEmpty()){
-            return null;
-        }
-        else{
-            return selectedTextList.get(0);
-        }
-    }
+    public Text getSelected(){return textJPA.findFirstBySelectedEquals(true);}
 }

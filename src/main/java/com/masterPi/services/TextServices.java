@@ -2,8 +2,8 @@ package com.masterPi.services;
 import com.masterPi.ExceptionHandler.CustomRunTimeException;
 import com.masterPi.data.QuickRepository;
 import com.masterPi.data.impl.Index;
-import com.masterPi.data.impl.SelectedText;
 import com.masterPi.data.impl.Text;
+import com.masterPi.resources.SelectTextInput;
 import com.masterPi.resources.TextWrapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -36,7 +36,7 @@ public class TextServices {
         text.setIndex(index);
         text.setText(content);
         text.setTitle(title);
-
+        text.setSelected(false);
         return quickRepository.createText(text);
     }
 
@@ -66,17 +66,20 @@ public class TextServices {
      * @param id
      */
     public void selectText(Long id){
-        if(quickRepository.getText(id)==null){
+        Text text=quickRepository.getText(id);
+        if(text==null){
             throw new CustomRunTimeException("invalid text id, text not found in system",HttpStatus.BAD_REQUEST);
         }
-        if(quickRepository.getSelectedText()==null){
-            quickRepository.createSelectedText(new SelectedText(id));
+        //deselect the old text
+        Text sel=quickRepository.getSelected();
+        if(sel!=null){
+            sel.setSelected(false);
+            quickRepository.createText(sel);
         }
-        else{
-            SelectedText select=quickRepository.getSelectedText();
-            select.setTextIdSelected(id);
-            quickRepository.createSelectedText(select);
-        }
+        //mark new text as selected
+        text.setSelected(true);
+        quickRepository.createText(text);
+
     }
 
     /***
@@ -100,11 +103,6 @@ public class TextServices {
      */
     public void deleteText(Long id){
         quickRepository.deleteText(id);
-
-        //if text to be delete is also currently selected remove selection
-        if(quickRepository.getSelectedText().getTextIdSelected()==id){
-            quickRepository.deleteSelectedText();
-        }
     }
 
     /***
@@ -186,14 +184,10 @@ public class TextServices {
      * get the id of the currently selected text
      * @return select id
      */
-    public SelectedText getSelect(){
-        SelectedText sel=quickRepository.getSelectedText();
-        if (sel==null){
-            throw new CustomRunTimeException("no text was selected before hand", HttpStatus.NOT_FOUND);
-        }
-        else{
-            return quickRepository.getSelectedText();
-        }
+    public SelectTextInput getSelect(){
+        Text sel=getCurrentSelectedText();
+        return new SelectTextInput(sel.getId());
+
     }
 
     /***
@@ -201,14 +195,10 @@ public class TextServices {
      * @return selected text
      */
     private Text getCurrentSelectedText(){
-        SelectedText sel=quickRepository.getSelectedText();
+        Text sel=quickRepository.getSelected();
         if (sel==null){
-            throw new CustomRunTimeException("no text was selected before hand", HttpStatus.BAD_REQUEST);
+            throw new CustomRunTimeException("no text was selected before hand or selected text deleted", HttpStatus.BAD_REQUEST);
         }
-        if(quickRepository.getText(sel.getTextIdSelected())==null){
-            throw new CustomRunTimeException("selected text not found was likely deleted", HttpStatus.BAD_REQUEST);
-        }
-        Text text=quickRepository.getText(sel.getTextIdSelected());
-        return text;
+        return sel;
     }
 }
