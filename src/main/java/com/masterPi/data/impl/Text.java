@@ -1,4 +1,6 @@
 package com.masterPi.data.impl;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import javax.persistence.*;
 
 @Entity
@@ -13,18 +15,20 @@ public class Text {
     private String text;
     private String title;
     private Boolean selected;
+    @ManyToOne
+    @JsonBackReference
+    private Category category;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "index_id", referencedColumnName = "id")
-    private Index index;
+    private Integer index;
 
     public Text() {
     }
 
-    public Text(String text, String title, Boolean selected, Index index) {
+    public Text(String text, String title, Boolean selected, Category category, Integer index) {
         this.text = text;
         this.title = title;
         this.selected = selected;
+        this.category = category;
         this.index = index;
     }
 
@@ -60,11 +64,19 @@ public class Text {
         this.selected = selected;
     }
 
-    public Index getIndex() {
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    public Integer getIndex() {
         return index;
     }
 
-    public void setIndex(Index index) {
+    public void setIndex(Integer index) {
         this.index = index;
     }
 }

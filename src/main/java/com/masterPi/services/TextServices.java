@@ -1,7 +1,6 @@
 package com.masterPi.services;
 import com.masterPi.ExceptionHandler.CustomRunTimeException;
 import com.masterPi.data.QuickRepository;
-import com.masterPi.data.impl.Index;
 import com.masterPi.data.impl.Text;
 import com.masterPi.resources.SelectTextInput;
 import com.masterPi.resources.TextWrapper;
@@ -29,11 +28,8 @@ public class TextServices {
      * @return the createdText
      */
     public Text createText(String title,String content){
-        Index index=new Index();
-        index.setIndex(0);
-
         Text text=new Text();
-        text.setIndex(index);
+        text.setIndex(0);
         text.setText(content);
         text.setTitle(title);
         text.setSelected(false);
@@ -55,7 +51,7 @@ public class TextServices {
             Text text=quickRepository.getText(id);
             text.setTitle(title);
             text.setText(content);
-            text.getIndex().setIndex(0);
+            text.setIndex(0);
             return quickRepository.createText(text);
         }
     }
@@ -124,11 +120,10 @@ public class TextServices {
      */
     public void updateIndexNext(){
         Text text=getCurrentSelectedText();
-        Index index=text.getIndex();
 
         //check we are not at end of content
-        if(index.getIndex()+Integer.parseInt(env.getProperty("parseSize"))<=text.getText().length()){
-            index.setIndex(index.getIndex()+Integer.parseInt(env.getProperty("parseSize")));
+        if(text.getIndex()+Integer.parseInt(env.getProperty("parseSize"))<=text.getText().length()){
+            text.setIndex(text.getIndex()+Integer.parseInt(env.getProperty("parseSize")));
         }
 
         //update the index of the text
@@ -140,11 +135,10 @@ public class TextServices {
      */
     public void updateIndexPrev(){
         Text text=getCurrentSelectedText();
-        Index index=text.getIndex();
 
         //check we are not at beginning of content
-        if(index.getIndex()-Integer.parseInt(env.getProperty("parseSize"))>=0){
-            index.setIndex(index.getIndex()-Integer.parseInt(env.getProperty("parseSize")));
+        if(text.getIndex()-Integer.parseInt(env.getProperty("parseSize"))>=0){
+            text.setIndex(text.getIndex()-Integer.parseInt(env.getProperty("parseSize")));
         }
 
         //update the index of the text
@@ -156,9 +150,7 @@ public class TextServices {
      */
     public void reset(){
         Text text=getCurrentSelectedText();
-        Index index=text.getIndex();
-        index.setIndex(0);
-
+        text.setIndex(0);
         //update the index of the text
         quickRepository.createText(text);
     }
@@ -169,14 +161,13 @@ public class TextServices {
      */
     public String getIndexReadText(){
         Text text=getCurrentSelectedText();
-        Index index=text.getIndex();
 
         //if the remaining string is less then full parse size just return remaining characters
-        if(index.getIndex()+Integer.parseInt(env.getProperty("parseSize"))> text.getText().length()){
-            return text.getText().substring(index.getIndex());
+        if(text.getIndex()+Integer.parseInt(env.getProperty("parseSize"))> text.getText().length()){
+            return text.getText().substring(text.getIndex());
         }
         else{
-            return text.getText().substring(index.getIndex(),index.getIndex()+Integer.parseInt(env.getProperty("parseSize")));
+            return text.getText().substring(text.getIndex(),text.getIndex()+Integer.parseInt(env.getProperty("parseSize")));
         }
     }
 

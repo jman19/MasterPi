@@ -9,9 +9,11 @@ import java.util.Optional;
 @Component
 public class QuickSpringRepository implements QuickRepository {
     private TextJPA textJPA;
+    private CategoryJPA categoryJPA;
 
-    public QuickSpringRepository(TextJPA textJPA) {
+    public QuickSpringRepository(TextJPA textJPA, CategoryJPA categoryJPA) {
         this.textJPA = textJPA;
+        this.categoryJPA=categoryJPA;
     }
 
     public Text getText(Long id){
@@ -36,4 +38,25 @@ public class QuickSpringRepository implements QuickRepository {
     }
 
     public Text getSelected(){return textJPA.findFirstBySelectedEquals(true);}
+
+    public Category createCategory(Category category){
+        return categoryJPA.save(category);
+    }
+
+    public Category getCategory(Long id){
+        try{
+            Optional byId=categoryJPA.findById(id);
+            return (Category) byId.get();
+        } catch (NoSuchElementException e){
+            return null;
+        }
+    }
+
+    public void deleteCategory(Long id){
+        categoryJPA.deleteById(id);
+    }
+
+    public List<Category> getAllCategory(){
+        return categoryJPA.findAll();
+    }
 }
