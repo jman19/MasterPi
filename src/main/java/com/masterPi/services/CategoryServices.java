@@ -31,7 +31,7 @@ public class CategoryServices {
         for (Category c:quickRepository.getAllCategory()){
             List<TextWrapper> texts=new ArrayList<>();
             for (Text t:c.getTexts()){
-                texts.add(new TextWrapper(t.getId(),t.getTitle()));
+                texts.add(new TextWrapper(t.getId(),t.getTitle(),t.getTimeStamp()));
             }
             categories.add(new CategoryWrapper(c.getId(),c.getName(),c.getDescription(),texts));
         }
@@ -48,10 +48,10 @@ public class CategoryServices {
         category.setDescription(categoryInput.getDescription());
         category.setName(categoryInput.getName());
         List<Text> textsToAdd=new ArrayList<>();
-        for (TextWrapper t:categoryInput.getTexts()){
-            Text text=quickRepository.getText(t.getId());
+        for (Long textId:categoryInput.getTexts()){
+            Text text=quickRepository.getText(textId);
             if(text==null){
-                throw new CustomRunTimeException("text to add id: "+t.getId()+" not found", HttpStatus.BAD_REQUEST);
+                throw new CustomRunTimeException("text to add id: "+textId+" not found", HttpStatus.BAD_REQUEST);
             }
             else{
                 textsToAdd.add(text);
@@ -78,63 +78,73 @@ public class CategoryServices {
     }
 
     /***
-     * This deletes a category given its id if deleteContents is true it will delete all text associated with the
-     * category as well if it is false the text will simply go to being unorganized
+     * This deletes a category given its id if deleteContents is true delete the text under the category as well
      * @param id
      * @param deleteContents
      */
-    void deleteCategory(Long id,Boolean deleteContents){
+    public void deleteCategory(Long id,Boolean deleteContents){
         Category category=quickRepository.getCategory(id);
         if(category==null){
             throw new CustomRunTimeException("category not found",HttpStatus.NOT_FOUND);
         }
+        List<Text> texts=category.getTexts();
+        category.setTexts(new ArrayList<>());
 
-        if(deleteContents==true){
-            for (Text t:category.getTexts()){
+        if(deleteContents==false) {
+            for (Text t : texts) {
+                t.setCategory(null);
+                quickRepository.createText(t);
+            }
+        }else {
+            for(Text t:texts){
                 quickRepository.deleteText(t.getId());
             }
         }
+        quickRepository.createCategory(category);
         quickRepository.deleteCategory(id);
     }
 
     /***
      * add a single text to a existing category
      * @param id
-     * @param textToAdd
+     * @param textToAddId
      */
-    public void addTextToCategory(Long id,TextWrapper textToAdd){
+    public void addTextToCategory(Long id,Long textToAddId){
         Category category=quickRepository.getCategory(id);
         if(category==null){
             throw new CustomRunTimeException("category not found",HttpStatus.NOT_FOUND);
         }
 
-        Text text=quickRepository.getText(textToAdd.getId());
+        Text text=quickRepository.getText(textToAddId);
         if(text==null){
-            throw new CustomRunTimeException("text to add id: "+textToAdd.getId()+" not found", HttpStatus.BAD_REQUEST);
+            throw new CustomRunTimeException("text to add id: "+textToAddId+" not found", HttpStatus.BAD_REQUEST);
         }
 
         category.getTexts().add(text);
+        text.setCategory(category);
         quickRepository.createCategory(category);
+        quickRepository.createText(text);
 
     }
 
     /***
      * remove a single text from a existing category
      * @param id
-     * @param textToRemove
+     * @param textToRemoveId
      */
-    public void removeTextFromCategory(Long id,TextWrapper textToRemove){
+    public void removeTextFromCategory(Long id,Long textToRemoveId){
         Category category=quickRepository.getCategory(id);
         if(category==null){
             throw new CustomRunTimeException("category not found",HttpStatus.NOT_FOUND);
         }
 
-        for (Text t:category.getTexts()){
-            if(t.getId()==textToRemove.getId()){
-                quickRepository.deleteText(t.getId());
+        for (int i=0;i<category.getTexts().size();i++){
+            if(category.getTexts().get(i).getId()==textToRemoveId){
+                category.getTexts().get(i).setCategory(null);
+                quickRepository.createText(category.getTexts().get(i));
             }
         }
-
+        category.getTexts().removeIf(t->t.getId()==textToRemoveId);
         quickRepository.createCategory(category);
     }
 

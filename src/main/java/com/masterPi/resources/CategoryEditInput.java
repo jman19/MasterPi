@@ -1,19 +1,15 @@
 package com.masterPi.resources;
 
-import java.util.List;
-
-public class CategoryInput {
+public class CategoryEditInput {
     private String name;
     private String description;
-    private List<Long> texts;
 
-    public CategoryInput() {
+    public CategoryEditInput() {
     }
 
-    public CategoryInput(String name, String description, List<Long> texts) {
+    public CategoryEditInput(String name, String description) {
         this.name = name;
         this.description = description;
-        this.texts = texts;
     }
 
     public String getName() {
@@ -30,13 +26,5 @@ public class CategoryInput {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public List<Long> getTexts() {
-        return texts;
-    }
-
-    public void setTexts(List<Long> texts) {
-        this.texts = texts;
     }
 }

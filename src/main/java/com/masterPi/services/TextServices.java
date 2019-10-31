@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.core.env.Environment;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -52,6 +53,8 @@ public class TextServices {
             text.setTitle(title);
             text.setText(content);
             text.setIndex(0);
+
+            text.setTimeStamp(new Date());
             return quickRepository.createText(text);
         }
     }
@@ -110,7 +113,7 @@ public class TextServices {
         List<TextWrapper> titles=new ArrayList<>();
         List<Text> texts=quickRepository.getAllText();
         for (Text t:texts){
-            titles.add(new TextWrapper(t.getId(),t.getTitle()));
+            titles.add(new TextWrapper(t.getId(),t.getTitle(),t.getTimeStamp()));
         }
         return titles;
     }

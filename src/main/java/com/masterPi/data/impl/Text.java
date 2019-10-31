@@ -1,7 +1,9 @@
 package com.masterPi.data.impl;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
+import java.util.Date;
 
 @Entity
 @Table(name = "Text")
@@ -20,6 +22,9 @@ public class Text {
     private Category category;
 
     private Integer index;
+
+    @CreationTimestamp
+    private Date timeStamp;
 
     public Text() {
     }
@@ -78,5 +83,13 @@ public class Text {
 
     public void setIndex(Integer index) {
         this.index = index;
+    }
+
+    public Date getTimeStamp() {
+        return timeStamp;
+    }
+
+    public void setTimeStamp(Date timeStamp) {
+        this.timeStamp = timeStamp;
     }
 }
