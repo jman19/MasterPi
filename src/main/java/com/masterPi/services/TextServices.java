@@ -16,10 +16,12 @@ import java.util.List;
 public class TextServices {
     private QuickRepository quickRepository;
     private Environment env;
+    private SlavePIServices slavePIServices;
 
-    public TextServices(QuickRepository quickRepository, Environment env) {
+    public TextServices(QuickRepository quickRepository, Environment env, SlavePIServices slavePIServices) {
         this.quickRepository = quickRepository;
         this.env = env;
+        this.slavePIServices = slavePIServices;
     }
 
     /***
@@ -65,6 +67,9 @@ public class TextServices {
      * @param id
      */
     public void selectText(Long id){
+        //clear slave PI
+        slavePIServices.clear();
+
         Text text=quickRepository.getText(id);
         if(text==null){
             throw new CustomRunTimeException("invalid text id, text not found in system",HttpStatus.BAD_REQUEST);
@@ -78,6 +83,9 @@ public class TextServices {
         //mark new text as selected
         text.setSelected(true);
         quickRepository.createText(text);
+
+        //send the first characters to slave PI
+        slavePIServices.translate(getIndexReadText());
 
     }
 
