@@ -125,7 +125,7 @@ public class TextServices {
         Text text=getCurrentSelectedText();
 
         //check we are not at end of content
-        if(text.getIndex()+Integer.parseInt(env.getProperty("parseSize"))<=text.getText().length()){
+        if(text.getIndex()+Integer.parseInt(env.getProperty("parseSize"))<text.getText().length()){
             text.setIndex(text.getIndex()+Integer.parseInt(env.getProperty("parseSize")));
         }
 
