@@ -26,7 +26,7 @@ public class QuickSpringRepository implements QuickRepository {
     }
 
     public List<Text> getAllText(){
-        return textJPA.findAll();
+        return textJPA.findAllByOrderByTimeStampDesc();
     }
 
     public Text createText(Text text){
