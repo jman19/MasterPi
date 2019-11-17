@@ -97,6 +97,16 @@ public class TextServicesTest {
     @Test
     @Transactional
     public void updateIndexNext() {
+        Integer parseSize=Integer.parseInt(env.getProperty("parseSize"));
+        Text text=quickSpringRepository.createText(new Text("texts","title",true,null,0));
+        textServices.updateIndexNext();
+        text=quickSpringRepository.getText(text.getId());
+        assertEquals(parseSize,text.getIndex());
+
+        //make sure pressing next again will not over increment index
+        textServices.updateIndexNext();
+        text=quickSpringRepository.getText(text.getId());
+        assertEquals(parseSize,text.getIndex());
     }
 
     /***
@@ -105,6 +115,17 @@ public class TextServicesTest {
     @Test
     @Transactional
     public void updateIndexPrev() {
+        Integer parseSize=Integer.parseInt(env.getProperty("parseSize"));
+        Text text=quickSpringRepository.createText(new Text("texts","title",true,null,parseSize));
+        textServices.updateIndexPrev();
+        text=quickSpringRepository.getText(text.getId());
+        assertEquals((Integer)0,text.getIndex());
+
+        //make sure pressing prev again will not increment index into negative
+        textServices.updateIndexPrev();
+        text=quickSpringRepository.getText(text.getId());
+        assertEquals((Integer)0,text.getIndex());
+
     }
 
     /***
@@ -113,6 +134,11 @@ public class TextServicesTest {
     @Test
     @Transactional
     public void reset() {
+        Text text=quickSpringRepository.createText(new Text("texts","title",true,null,3));
+        textServices.reset();
+        text=quickSpringRepository.getText(text.getId());
+        assertEquals((Integer) 0,text.getIndex());
+
     }
 
     @Test
