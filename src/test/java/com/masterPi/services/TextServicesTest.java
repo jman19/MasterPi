@@ -1,25 +1,34 @@
 package com.masterPi.services;
 
-import com.masterPi.data.impl.QuickSpringRepository;
+import com.masterPi.data.QuickRepository;
 import com.masterPi.data.impl.Text;
-import org.junit.Before;
+import com.masterPi.resources.BodyMessage;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.core.env.Environment;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
 
-@ActiveProfiles("test")
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class TextServicesTest {
 
     @Autowired
-    private QuickSpringRepository quickSpringRepository;
+    private QuickRepository quickSpringRepository;
+
+    @Autowired
+    private Environment env;
+
+    @MockBean
+    private SlavePIServices slavePIServices;
+
     @Autowired
     private TextServices textServices;
 
@@ -34,42 +43,93 @@ public class TextServicesTest {
     }
 
     @Test
+    @Transactional
     public void editText() {
+
+        Text text = quickSpringRepository.createText(new Text("text", "title", false, null, 0));
+        Mockito.when(slavePIServices.translate(any(String.class))).thenReturn(new BodyMessage("success translating text", 200));
+        Text editedText = textServices.editText(text.getId(), "edited", "changed");
+        assertTrue(editedText.getTitle().equals("edited"));
+        assertTrue(editedText.getText().equals("changed"));
     }
 
     @Test
+    @Transactional
     public void selectText() {
+        Text text=quickSpringRepository.createText(new Text("text","title",false,null,0));
+        Mockito.when(slavePIServices.translate(any(String.class))).thenReturn(new BodyMessage("success translating text",200));
+        Mockito.when(slavePIServices.clear()).thenReturn(new BodyMessage("success",200));
+        textServices.selectText(text.getId());
+        assertTrue(quickSpringRepository.getText(text.getId()).getSelected());
     }
 
     @Test
-    public void getText() {
+    @Transactional
+    public void getText(){
+        Text text=quickSpringRepository.createText(new Text("text","title",false,null,0));
+        Text getText=textServices.getText(text.getId());
+        assertTrue(getText.getTitle().equals("title"));
+        assertTrue(getText.getText().equals("text"));
+        assertFalse(getText.getSelected());
+        assertNull(getText.getCategory());
+        assertEquals((Integer) 0,getText.getIndex());
     }
 
     @Test
+    @Transactional
     public void deleteText() {
+        Text text = quickSpringRepository.createText(new Text("text", "title", false, null, 0));
+        textServices.deleteText(text.getId());
+        assertNull(quickSpringRepository.getText(text.getId()));
     }
 
     @Test
-    public void getAllStoredText() {
+    @Transactional
+    public void getAllStoredText(){
+        quickSpringRepository.createText(new Text("text","title1",false,null,0));
+        quickSpringRepository.createText(new Text("text","title2",false,null,0));
+        assertEquals(2,textServices.getAllStoredText().size());
     }
 
+    /***
+     * this is a stub to simulate next button being pressed
+     */
     @Test
+    @Transactional
     public void updateIndexNext() {
     }
 
+    /***
+     * this is a stub to simulate prev button being pressed
+     */
     @Test
+    @Transactional
     public void updateIndexPrev() {
     }
 
+    /***
+     * this is a stub to simulate reset button being pressed
+     */
     @Test
+    @Transactional
     public void reset() {
     }
 
     @Test
+    @Transactional
     public void getIndexReadText() {
+        Integer parseSize=Integer.parseInt(env.getProperty("parseSize"));
+        Text text=quickSpringRepository.createText(new Text("texts","title",true,null,0));
+        assertTrue(textServices.getIndexReadText().equals("text"));
+        //check to ensure if there is not enough characters that they are properly padded
+        text.setIndex(parseSize);
+        assertTrue(textServices.getIndexReadText().equals("s   "));
     }
 
     @Test
-    public void getSelect() {
+    @Transactional
+    public void getSelect(){
+        Text text=quickSpringRepository.createText(new Text("texts","title",true,null,0));
+        assertEquals(textServices.getSelect().getTextIdToSelect(),text.getId());
     }
 }
