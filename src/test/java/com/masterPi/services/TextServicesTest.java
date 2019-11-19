@@ -1,5 +1,6 @@
 package com.masterPi.services;
 
+import com.masterPi.ExceptionHandler.CustomRunTimeException;
 import com.masterPi.data.QuickRepository;
 import com.masterPi.data.impl.Text;
 import com.masterPi.resources.BodyMessage;
@@ -111,6 +112,15 @@ public class TextServicesTest {
     }
 
     /***
+     * this is a stub to simulate next button being pressed when no text is selected
+     */
+    @Test(expected = CustomRunTimeException.class)
+    @Transactional
+    public void updateIndexNextErrorHandling(){
+        textServices.updateIndexNext();
+    }
+
+    /***
      * this is a stub to simulate prev button being pressed
      */
     @Test
@@ -130,6 +140,15 @@ public class TextServicesTest {
     }
 
     /***
+     * this is a stub to simulate prev button being pressed when no text is selected
+     */
+    @Test(expected = CustomRunTimeException.class)
+    @Transactional
+    public void updateIndexPrevErrorHandling(){
+        textServices.updateIndexPrev();
+    }
+
+    /***
      * this is a stub to simulate reset button being pressed
      */
     @Test
@@ -140,6 +159,15 @@ public class TextServicesTest {
         text=quickSpringRepository.getText(text.getId());
         assertEquals((Integer) 0,text.getIndex());
 
+    }
+
+    /***
+     * this is a stub to simulate reset button being pressed when no text is selected
+     */
+    @Test(expected = CustomRunTimeException.class)
+    @Transactional
+    public void resetErrorHandling(){
+        textServices.reset();
     }
 
     @Test
@@ -158,5 +186,100 @@ public class TextServicesTest {
     public void getSelect(){
         Text text=quickSpringRepository.createText(new Text("texts","title",true,null,0));
         assertEquals(textServices.getSelect().getTextIdToSelect(),text.getId());
+    }
+
+    //error handling tests
+    @Test(expected = CustomRunTimeException.class)
+    @Transactional
+    public void createTextInvalidTitleNull(){
+        textServices.createText(null,"content");
+    }
+
+    @Test(expected = CustomRunTimeException.class)
+    @Transactional
+    public void createTextInvalidTitleEmpty(){
+        textServices.createText("","content");
+    }
+
+    @Test(expected = CustomRunTimeException.class)
+    @Transactional
+    public void createTextInvalidContentNull(){
+        textServices.createText("title",null);
+    }
+
+    @Test(expected = CustomRunTimeException.class)
+    @Transactional
+    public void createTextInvalidContentEmpty(){
+        textServices.createText("title","");
+    }
+
+    //edit text that doesnt exist
+    @Test(expected = CustomRunTimeException.class)
+    @Transactional
+    public void editTextInvalidId(){
+        textServices.editText(0L,"title","content");
+    }
+
+    @Test(expected = CustomRunTimeException.class)
+    @Transactional
+    public void editTextInvalidTitleNull(){
+        Text text=quickSpringRepository.createText(new Text("texts","title",true,null,0));
+        textServices.editText(text.getId(),null,"content");
+    }
+
+    @Test(expected = CustomRunTimeException.class)
+    @Transactional
+    public void editTextInvalidTitleEmpty(){
+        Text text=quickSpringRepository.createText(new Text("texts","title",true,null,0));
+        textServices.editText(text.getId(),"","content");
+    }
+
+    @Test(expected = CustomRunTimeException.class)
+    @Transactional
+    public void editTextInvalidContentNull(){
+        Text text=quickSpringRepository.createText(new Text("texts","title",true,null,0));
+        textServices.editText(text.getId(),"title",null);
+    }
+
+    @Test(expected = CustomRunTimeException.class)
+    @Transactional
+    public void editTextInvalidContentEmpty(){
+        Text text=quickSpringRepository.createText(new Text("texts","title",true,null,0));
+        textServices.editText(text.getId(),"title","");
+    }
+
+    //select text that doesnt exist
+    @Test(expected = CustomRunTimeException.class)
+    @Transactional
+    public void selectTextWithInvalidId(){
+        textServices.selectText(0L);
+    }
+
+    //get text that doesnt exist
+    @Test(expected = CustomRunTimeException.class)
+    @Transactional
+    public void getTextInvalidId(){
+        textServices.getText(0L);
+    }
+
+    //delete text that doesnt exist
+    @Test(expected = CustomRunTimeException.class)
+    @Transactional
+    public void deleteTextInvalidId(){
+        textServices.deleteText(0L);
+    }
+
+    //get currently reading text with no text selected
+    @Test(expected = CustomRunTimeException.class)
+    @Transactional
+    public void getIndexReadNoSelectedText(){
+        textServices.getIndexReadText();
+    }
+
+    //get selected text id with no text selected
+    @Test(expected = CustomRunTimeException.class)
+    @Transactional
+    public void getSelectedTextIdNoSelectedText(){
+        textServices.getSelect();
     }
 }

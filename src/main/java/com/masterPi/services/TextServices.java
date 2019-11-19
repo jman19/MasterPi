@@ -12,8 +12,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static java.lang.Math.abs;
-
 @Service
 public class TextServices {
     private QuickRepository quickRepository;
@@ -33,6 +31,9 @@ public class TextServices {
      * @return the createdText
      */
     public Text createText(String title,String content){
+        if((title==null || title.isEmpty()) || (content==null || content.isEmpty())){
+            throw new CustomRunTimeException("title/content cannot be empty", HttpStatus.BAD_REQUEST);
+        }
         Text text=new Text();
         text.setIndex(0);
         text.setText(content);
@@ -51,6 +52,9 @@ public class TextServices {
     public Text editText(Long id, String title, String content){
         if(quickRepository.getText(id)==null){
             throw new CustomRunTimeException("the text was not found", HttpStatus.NOT_FOUND);
+        }
+        if((title==null || title.isEmpty()) || (content==null || content.isEmpty())){
+            throw new CustomRunTimeException("title/content cannot be empty", HttpStatus.BAD_REQUEST);
         }
         else{
             Text text=quickRepository.getText(id);
@@ -118,8 +122,11 @@ public class TextServices {
      * @param id
      */
     public void deleteText(Long id){
-        Text sel=quickRepository.getSelected();
+        if(quickRepository.getText(id)==null){
+            throw new CustomRunTimeException("text to delete was not found/already deleted", HttpStatus.NOT_FOUND);
+        }
 
+        Text sel=quickRepository.getSelected();
         //if deleted text is the one currently selected clear the braille module
         if(sel!=null && sel.getId()==id){
             //clear slave PI
