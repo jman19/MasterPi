@@ -93,6 +93,21 @@ public class ApplicationTest{
 
     }
 
+    //invalid input error test
+    @Test
+    @Transactional
+    public void invalidDeleteTextDoesntExist() throws Exception{
+        mockMvc.perform(delete("/deleteText/0")).andExpect(status().isNotFound());
+    }
+
+    //invalid edit text request
+    @Test
+    @Transactional
+    public void editTextDoesntExist() throws Exception{
+        mockMvc.perform(put("/edit/text/0").contentType(MediaType.APPLICATION_JSON)
+                .content(convertToJson(new TextInput("title","body")))).andExpect(status().isNotFound());
+    }
+
     private String convertToJson(Object o) throws Exception {
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
         return ow.writeValueAsString(o);
