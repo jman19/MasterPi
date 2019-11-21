@@ -31,7 +31,7 @@ public class CategoryServices {
         for (Category c:quickRepository.getAllCategory()){
             List<TextWrapper> texts=new ArrayList<>();
             for (Text t:c.getTexts()){
-                texts.add(new TextWrapper(t.getId(),t.getTitle(),t.getTimeStamp()));
+                texts.add(new TextWrapper(t.getId(),t.getTitle(),t.getTimeStamp(),c.getName()));
             }
             categories.add(new CategoryWrapper(c.getId(),c.getName(),c.getDescription(),texts));
         }
@@ -54,13 +54,18 @@ public class CategoryServices {
                 throw new CustomRunTimeException("text to add id: "+textId+" not found", HttpStatus.BAD_REQUEST);
             }
             else{
+                text.setCategory(category);
                 textsToAdd.add(text);
             }
         }
 
         category.setTexts(textsToAdd);
-
-        return quickRepository.createCategory(category);
+        Category createdCategory=quickRepository.createCategory(category);
+        //save text that have category set
+        for (Text text:textsToAdd){
+            quickRepository.createText(text);
+        }
+        return createdCategory;
 
     }
 

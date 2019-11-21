@@ -113,7 +113,11 @@ public class TextServices {
         List<TextWrapper> titles=new ArrayList<>();
         List<Text> texts=quickRepository.getAllText();
         for (Text t:texts){
-            titles.add(new TextWrapper(t.getId(),t.getTitle(),t.getTimeStamp()));
+            String category=null;
+            if(t.getCategory()!=null){
+                category=t.getCategory().getName();
+            }
+            titles.add(new TextWrapper(t.getId(),t.getTitle(),t.getTimeStamp(),category));
         }
         return titles;
     }
