@@ -6,6 +6,7 @@ public class TextWrapper {
     private Long id;
     private String title;
     private Date timeStamp;
+    private String category;
 
     public TextWrapper() {
     }
@@ -19,6 +20,13 @@ public class TextWrapper {
         this.id = id;
         this.title = title;
         this.timeStamp = timeStamp;
+    }
+
+    public TextWrapper(Long id, String title, Date timeStamp,String category) {
+        this.id = id;
+        this.title = title;
+        this.timeStamp = timeStamp;
+        this.category=category;
     }
 
     public Long getId() {
@@ -43,5 +51,13 @@ public class TextWrapper {
 
     public void setTimeStamp(Date timeStamp) {
         this.timeStamp = timeStamp;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 }
