@@ -16,10 +16,12 @@ import java.util.List;
 public class TextServices {
     private QuickRepository quickRepository;
     private Environment env;
+    private SlavePIServices slavePIServices;
 
-    public TextServices(QuickRepository quickRepository, Environment env) {
+    public TextServices(QuickRepository quickRepository, Environment env, SlavePIServices slavePIServices) {
         this.quickRepository = quickRepository;
         this.env = env;
+        this.slavePIServices = slavePIServices;
     }
 
     /***
@@ -29,6 +31,9 @@ public class TextServices {
      * @return the createdText
      */
     public Text createText(String title,String content){
+        if((title==null || title.isEmpty()) || (content==null || content.isEmpty())){
+            throw new CustomRunTimeException("title/content cannot be empty", HttpStatus.BAD_REQUEST);
+        }
         Text text=new Text();
         text.setIndex(0);
         text.setText(content);
@@ -48,6 +53,9 @@ public class TextServices {
         if(quickRepository.getText(id)==null){
             throw new CustomRunTimeException("the text was not found", HttpStatus.NOT_FOUND);
         }
+        if((title==null || title.isEmpty()) || (content==null || content.isEmpty())){
+            throw new CustomRunTimeException("title/content cannot be empty", HttpStatus.BAD_REQUEST);
+        }
         else{
             Text text=quickRepository.getText(id);
             text.setTitle(title);
@@ -55,7 +63,14 @@ public class TextServices {
             text.setIndex(0);
 
             text.setTimeStamp(new Date());
-            return quickRepository.createText(text);
+            Text updatedText=quickRepository.createText(text);
+
+            //update the text on braille board as well if the edited text is the one currently selected
+            if(updatedText.getSelected()) {
+                //send the first characters to slave PI
+                slavePIServices.translate(getIndexReadText());
+            }
+            return updatedText;
         }
     }
 
@@ -65,6 +80,9 @@ public class TextServices {
      * @param id
      */
     public void selectText(Long id){
+        //clear slave PI
+        slavePIServices.clear();
+
         Text text=quickRepository.getText(id);
         if(text==null){
             throw new CustomRunTimeException("invalid text id, text not found in system",HttpStatus.BAD_REQUEST);
@@ -78,6 +96,9 @@ public class TextServices {
         //mark new text as selected
         text.setSelected(true);
         quickRepository.createText(text);
+
+        //send the first characters to slave PI
+        slavePIServices.translate(getIndexReadText());
 
     }
 
@@ -101,6 +122,16 @@ public class TextServices {
      * @param id
      */
     public void deleteText(Long id){
+        if(quickRepository.getText(id)==null){
+            throw new CustomRunTimeException("text to delete was not found/already deleted", HttpStatus.NOT_FOUND);
+        }
+
+        Text sel=quickRepository.getSelected();
+        //if deleted text is the one currently selected clear the braille module
+        if(sel!=null && sel.getId()==id){
+            //clear slave PI
+            slavePIServices.clear();
+        }
         quickRepository.deleteText(id);
     }
 
@@ -135,6 +166,9 @@ public class TextServices {
 
         //update the index of the text
         quickRepository.createText(text);
+
+        //send the next characters to slave PI
+        slavePIServices.translate(getIndexReadText());
     }
 
     /***
@@ -150,6 +184,9 @@ public class TextServices {
 
         //update the index of the text
         quickRepository.createText(text);
+
+        //send the prev characters to slave PI
+        slavePIServices.translate(getIndexReadText());
     }
 
     /***
@@ -160,6 +197,9 @@ public class TextServices {
         text.setIndex(0);
         //update the index of the text
         quickRepository.createText(text);
+
+        //send the first characters to slave PI
+        slavePIServices.translate(getIndexReadText());
     }
 
     /***
@@ -168,13 +208,16 @@ public class TextServices {
      */
     public String getIndexReadText(){
         Text text=getCurrentSelectedText();
+        Integer parseSize=Integer.parseInt(env.getProperty("parseSize"));
 
         //if the remaining string is less then full parse size just return remaining characters
-        if(text.getIndex()+Integer.parseInt(env.getProperty("parseSize"))> text.getText().length()){
-            return text.getText().substring(text.getIndex());
+        //also pad it with spaces at the end to maintain same substring size
+        if(text.getIndex()+parseSize> text.getText().length()){
+
+            return String.format("%-" + parseSize + "s", text.getText().substring(text.getIndex()));
         }
         else{
-            return text.getText().substring(text.getIndex(),text.getIndex()+Integer.parseInt(env.getProperty("parseSize")));
+            return text.getText().substring(text.getIndex(),text.getIndex()+parseSize);
         }
     }
 
